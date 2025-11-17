@@ -1,48 +1,32 @@
 """
-Database Schemas
+Database Schemas for MagicBook
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Each Pydantic model represents a MongoDB collection (lowercased class name).
 """
-
+from typing import List, Optional
 from pydantic import BaseModel, Field
-from typing import Optional
 
-# Example schemas (replace with your own):
+class StoryRequest(BaseModel):
+    child_name: str = Field(..., description="Child's first name")
+    age: int = Field(..., ge=1, le=12, description="Child's age (1-12)")
+    theme: str = Field(..., description="Preferred universe/theme, e.g., pirates, space, jungle")
+    tone: Optional[str] = Field("doux", description="Narrative tone: doux, aventureux, drôle, apaisant")
+    language: str = Field("fr", description="Language code, e.g., fr or en")
+    pages: int = Field(12, ge=6, le=20, description="Target number of pages for full book")
 
-class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+class StoryPage(BaseModel):
+    page_number: int
+    text: str
+    image_url: str
 
-class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
-
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Story(BaseModel):
+    title: str
+    child_name: str
+    age: int
+    theme: str
+    tone: str = "doux"
+    language: str = "fr"
+    pages: int
+    variant: str = Field("preview", description="preview or full")
+    price_cents: int = 1000
+    pages_data: List[StoryPage]
